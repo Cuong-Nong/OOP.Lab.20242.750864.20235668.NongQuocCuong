@@ -1,0 +1,70 @@
+1. Which classes are aggregates of other classes? Checking all constructors of whole classes if they initialize for their parts?
+Để xác định một lớp có phải là tập hợp (aggregate) của lớp khác hay không, ta cần kiểm tra xem trong các hàm khởi tạo (constructor) của lớp đó có khởi tạo các đối tượng thành phần hay không. Cụ thể:
+- CompactDisc chứa ArrayList<Track>.
+- Book chứa List<String> đại diện cho danh sách tác giả.
+- Cart chứa ArrayList<Media>.
+- Store chứa ArrayList<Media>.
+Loại bỏ các setter không cần thiết:
+Các phương thức setter nên được loại bỏ nếu:
+- Dữ liệu không thay đổi sau khi khởi tạo (ví dụ: title, cost, id, category, director, length).
+- Mục tiêu là đảm bảo tính bất biến (immutable) của đối tượng.
+Thay vào đó, chỉ cần giữ lại các phương thức thêm/xóa phần tử như:
+- addTrack() và removeTrack() trong CompactDisc.
+- addAuthor() và removeAuthor() trong Book.
+
+2. If the passing object is not an instance of Media, what happens?
+Khi viết điều kiện:
+    if (!(o instanceof Media)) return false;
+Ta đang đảm bảo rằng đối tượng o thực sự là một instance của lớp Media. Việc kiểm tra này giúp chương trình tránh được lỗi ClassCastException khi ép kiểu. Nếu không kiểm tra mà ép kiểu trực tiếp:
+    Media m = (Media) o;
+thì nếu o không phải là Media, chương trình sẽ bị lỗi tại thời gian chạy. Vì vậy, việc sử dụng instanceof là cách an toàn để kiểm soát kiểu dữ liệu.
+
+3. What class should implement the Comparable interface?
+Lớp Media nên là lớp hiện thực (implement) giao diện Comparable<Media>, bởi vì:
+- Media là lớp cha chung của tất cả các loại phương tiện như Book, DigitalVideoDisc, CompactDisc.
+- Việc định nghĩa quy tắc sắp xếp mặc định trong lớp Media giúp áp dụng thống nhất khi sắp xếp danh sách các đối tượng này.
+
+4. How should you implement the compareTo() method to reflect the ordering we want?
+Nếu muốn quy tắc sắp xếp mặc định là:
+- Sắp xếp theo title tăng dần (không phân biệt hoa thường),
+- Nếu trùng title thì sắp xếp theo cost giảm dần,
+Ta hiện thực phương thức compareTo() như sau:
+    @Override
+    public int compareTo(Media other) {
+        int titleCompare = this.getTitle().compareToIgnoreCase(other.getTitle());
+        if (titleCompare != 0) {
+            return titleCompare;
+        } else {
+            return Float.compare(other.getCost(), this.getCost()); // sắp theo cost giảm dần
+        }
+    }
+5. Can we have two ordering rules (by title then cost and by cost then title) using Comparable?
+Không thể.
+- Giao diện Comparable chỉ cho phép một quy tắc sắp xếp duy nhất, thông qua phương thức compareTo().
+- Nếu cần sử dụng nhiều cách sắp xếp khác nhau (ví dụ: theo title, theo cost, hoặc theo length), ta nên sử dụng giao diện Comparator.
+Tóm lại:
+- Comparable: dùng cho quy tắc sắp xếp mặc định duy nhất.
+- Comparator: dùng cho nhiều quy tắc sắp xếp tùy theo ngữ cảnh sử dụng.
+
+6. Suppose the DVDs have a different ordering rule (by title, then decreasing length, then cost). How would you modify your code?
+Giả sử yêu cầu sắp xếp đối với DVD như sau:
+- Sắp xếp theo title (tăng dần),
+- Nếu trùng title thì sắp theo length (giảm dần),
+- Nếu tiếp tục trùng thì sắp theo cost (tăng dần),
+Ta có thể ghi đè (override) phương thức compareTo() trong lớp con DigitalVideoDisc như sau:
+    @Override
+    public int compareTo(Media other) {
+        if (!(other instanceof DigitalVideoDisc)) {
+            return super.compareTo(other); // sử dụng quy tắc sắp xếp của Media
+        }
+
+        DigitalVideoDisc o = (DigitalVideoDisc) other;
+        int titleCompare = this.getTitle().compareToIgnoreCase(o.getTitle());
+        if (titleCompare != 0) return titleCompare;
+
+        int lengthCompare = Integer.compare(o.length, this.length); // giảm dần theo length
+        if (lengthCompare != 0) return lengthCompare;
+
+        return Float.compare(this.getCost(), o.getCost()); // tăng dần theo cost
+    }
+Cách làm này cho phép lớp DigitalVideoDisc có quy tắc sắp xếp riêng, trong khi các lớp khác vẫn sử dụng quy tắc sắp xếp mặc định trong Media.
