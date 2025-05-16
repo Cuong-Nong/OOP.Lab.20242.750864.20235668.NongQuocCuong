@@ -15,9 +15,9 @@ public abstract class AddItemToStoreScreen extends JFrame {
     public AddItemToStoreScreen(Store store) {
         this.store = store;
         setTitle("Add Item");
-        setSize(400, 300); // Giảm kích thước để phù hợp với form nhập liệu
+        setSize(400, 300);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Sử dụng DISPOSE_ON_CLOSE thay vì EXIT_ON_CLOSE
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         Container cp = getContentPane();
         cp.setLayout(new BorderLayout());
@@ -30,8 +30,8 @@ public abstract class AddItemToStoreScreen extends JFrame {
     protected JPanel createNorth() {
         JPanel north = new JPanel();
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
-        north.add(StoreManagerScreen.createMenuBar(store, this)); // Sử dụng phương thức static
-        north.add(StoreManagerScreen.createHeader()); // Sử dụng phương thức static
+        north.add(StoreManagerScreen.createMenuBar(store, this));
+        north.add(StoreManagerScreen.createHeader());
         return north;
     }
 
